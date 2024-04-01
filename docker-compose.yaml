@@ -27,9 +27,16 @@ services:
       networks:
         - my_network
       restart: unless-stopped
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - 9411:9411
+    networks:
+      - my_network
 
 networks:
-  my_network:
+   my_network: mk_network
    driver: bridge
 
 volumes:
