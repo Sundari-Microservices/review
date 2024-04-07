@@ -1,5 +1,6 @@
 package com.alphabet.linkedin.reviewms.review;
 
+import com.alphabet.linkedin.reviewms.review.messaging.ReviewMessageProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,8 @@ public class ReviewController {
      */
     @Autowired
     private ReviewService reviewService;
-
+    @Autowired
+    private ReviewMessageProducer reviewMessageProducer;
 
     //    Get => /reviews?companyId={companyId}
 
@@ -49,6 +51,7 @@ public class ReviewController {
 
         boolean status = reviewService.createReview(review, companyId);
         if (status) {
+            reviewMessageProducer.sendMessage(review);
             return new ResponseEntity<>("review created successfully", HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>("failed to create review", HttpStatus.NOT_FOUND);
@@ -79,5 +82,14 @@ public class ReviewController {
         }
 
     }
+
+
+    @GetMapping("/averageRating")
+    public Double getAverageReviewRating(@RequestParam("companyId") long comapnyId) {
+        List<Review> reviews = reviewService.getAllReviews(comapnyId);
+        return reviews.stream().mapToDouble(Review::getRating).average().orElse(0.0);
+    }
+
+
 
 }
